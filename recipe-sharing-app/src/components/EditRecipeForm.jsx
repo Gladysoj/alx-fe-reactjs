@@ -26,20 +26,20 @@ const EditRecipeForm = ({ recipe }) => {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Recipe Title"
-        style={{ padding: '8px', fontSize: '16px' }}
+        style={{ padding: '10px', fontSize: '18px' }}
       />
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Recipe Description"
-        style={{ padding: '8px', fontSize: '16px', minHeight: '100px' }}
+        style={{ padding: '10px', fontSize: '18px', minHeight: '100px' }}
       />
       <button
         type="submit"
         style={{
-          padding: '8px',
-          fontSize: '16px',
-          backgroundColor: '#2196F3',
+          padding: '10px',
+          fontSize: '18px',
+          backgroundColor: '#441752',
           color: 'white',
           border: 'none',
           cursor: 'pointer',
