@@ -15,9 +15,9 @@ const DeleteRecipeButton = ({ recipeId }) => {
     <button
       onClick={handleDelete}
       style={{
-        padding: '8px',
-        fontSize: '16px',
-        backgroundColor: '#F44336',
+        padding: '10px',
+        fontSize: '18px',
+        backgroundColor: '#003C43',
         color: 'white',
         border: 'none',
         cursor: 'pointer',
