@@ -16,17 +16,20 @@ const PostsComponent = () => {
   const {
     data: posts,
     isLoading,
+    isError,
     error,
     refetch,
-    isFetching
+    isFetching,
+    isPreviousData // Added to show when previous data is being used
   } = useQuery('posts', fetchPosts, {
-    // Optional configuration
     staleTime: 30000, // 30 seconds
     cacheTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true, // Refetch when window regains focus
+    keepPreviousData: true // Keep previous data while fetching new data
   });
 
-  // Loading state
-  if (isLoading) {
+  // Loading state (initial load)
+  if (isLoading && !posts) {
     return (
       <div>
         <h2>Posts</h2>
@@ -36,7 +39,7 @@ const PostsComponent = () => {
   }
 
   // Error state
-  if (error) {
+  if (isError) {
     return (
       <div>
         <h2>Posts</h2>
@@ -48,7 +51,11 @@ const PostsComponent = () => {
 
   return (
     <div>
-      <h2>Posts {isFetching && '(Updating...)'}</h2>
+      <h2>
+        Posts{' '}
+        {isFetching && '(Updating...) '}
+        {isPreviousData && posts && '(Showing previous data)'}
+      </h2>
       
       {/* Refetch button to demonstrate manual data update */}
       <button 
