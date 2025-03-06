@@ -16,11 +16,11 @@ const PostsComponent = () => {
   const {
     data: posts,
     isLoading,
-    error,
+    isError,  // Changed from 'error' to 'isError'
+    error,    // Keep error for the error message
     refetch,
     isFetching
   } = useQuery('posts', fetchPosts, {
-    // Optional configuration
     staleTime: 30000, // 30 seconds
     cacheTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -35,8 +35,8 @@ const PostsComponent = () => {
     );
   }
 
-  // Error state
-  if (error) {
+  // Error state using isError
+  if (isError) {
     return (
       <div>
         <h2>Posts</h2>
