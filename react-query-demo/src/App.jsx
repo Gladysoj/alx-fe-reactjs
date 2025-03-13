@@ -16,4 +16,3 @@ import PostsComponent from './components/PostsComponent';
   }
 
 export default App
-

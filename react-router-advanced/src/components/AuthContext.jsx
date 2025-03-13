@@ -1,3 +1,4 @@
+// src/context/AuthContext.jsx
 import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext();
@@ -15,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// Custom hook for authentication
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
