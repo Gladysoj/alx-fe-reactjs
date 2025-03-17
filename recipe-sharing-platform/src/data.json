@@ -1,14 +1,62 @@
 [
-  {
-    "id": 1,
-    "title": "Spaghetti Carbonara",
-    "summary": "A classic Italian pasta dish with eggs, cheese, bacon, and black pepper.",
-    "image": "https://via.placeholder.com/150"
-  },
-  {
-    "id": 2,
-    "title": "Chicken Tikka Masala",
-    "summary": "Chunks of grilled chicken (tikka) cooked in a smooth buttery & creamy tomato based gravy.",
-    "image": "https://via.placeholder.com/150"
-  }
-]
+    {
+      "id": 1,
+      "title": "Spaghetti Carbonara",
+      "summary": "A classic Italian pasta dish with eggs, cheese, bacon, and black pepper.",
+      "image": "https://via.placeholder.com/300",
+      "ingredients": [
+        "200g spaghetti",
+        "100g pancetta",
+        "2 large eggs",
+        "50g pecorino cheese",
+        "Black pepper"
+      ],
+      "steps": [
+        "Cook spaghetti in boiling salted water until al dente.",
+        "Fry pancetta until crisp.",
+        "Whisk eggs and cheese together.",
+        "Mix cooked spaghetti with pancetta, then add egg mixture off heat.",
+        "Season with black pepper and serve."
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Chicken Tikka Masala",
+      "summary": "Chunks of grilled chicken (tikka) cooked in a smooth buttery & creamy tomato based gravy.",
+      "image": "https://via.placeholder.com/300",
+      "ingredients": [
+        "500g chicken breast",
+        "200g yogurt",
+        "2 tbsp tikka masala paste",
+        "400g canned tomatoes",
+        "100ml cream"
+      ],
+      "steps": [
+        "Marinate chicken in yogurt and tikka paste for 1 hour.",
+        "Grill chicken until charred.",
+        "Cook tomatoes and spices in a pan.",
+        "Add cream and grilled chicken, simmer for 10 minutes.",
+        "Serve with rice or naan."
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Vegetable Stir Fry",
+      "summary": "A quick and healthy mix of fresh vegetables stir-fried with soy sauce.",
+      "image": "https://via.placeholder.com/300",
+      "ingredients": [
+        "1 bell pepper",
+        "1 broccoli head",
+        "2 carrots",
+        "2 tbsp soy sauce",
+        "1 tbsp sesame oil"
+      ],
+      "steps": [
+        "Chop vegetables into bite-sized pieces.",
+        "Heat sesame oil in a wok.",
+        "Stir-fry vegetables for 5-7 minutes.",
+        "Add soy sauce and cook for 1 more minute.",
+        "Serve hot."
+      ]
+    }
+  ]
