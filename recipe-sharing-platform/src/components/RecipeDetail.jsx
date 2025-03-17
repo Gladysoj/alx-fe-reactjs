@@ -1,59 +1,56 @@
-// src/data.json
-[
-  {
-    "id": 1,
-    "title": "Spaghetti Carbonara",
-    "summary": "A classic Italian pasta dish with eggs, cheese, bacon, and black pepper.",
-    "image": "https://via.placeholder.com/300",
-    "ingredients": [
-      "200g spaghetti",
-      "100g pancetta",
-      "2 large eggs",
-      "50g pecorino cheese",
-      "Black pepper"
-    ],
-    "instructions": [
-      "Cook spaghetti in boiling salted water until al dente.",
-      "Fry pancetta until crisp.",
-      "Whisk eggs and cheese together.",
-      "Mix cooked spaghetti with pancetta, then add egg mixture off heat.",
-      "Season with black pepper and serve."
-    ]
-  },
-  {
-    "id": 2,
-    "title": "Chicken Tikka Masala",
-    "summary": "Chunks of grilled chicken (tikka) cooked in a smooth buttery & creamy tomato based gravy.",
-    "image": "https://via.placeholder.com/300",
-    "ingredients": [
-      "500g chicken breast",
-      "200g yogurt",
-      "2 tbsp tikka masala paste",
-      "400g canned tomatoes",
-      "100ml cream"
-    ],
-    "instructions": [
-      "Marinate chicken in yogurt and tikka paste for 1 hour.",
-      "Grill chicken until charred.",
-      "Cook tomatoes and spices in a pan.",
-      "Add cream and grilled chicken, simmer for 10 minutes.",
-      "Serve with rice or naan."
-    ]
-  },
-  {
-    "id": 3,
-    "title": "Vegetable Stir Fry",
-    "summary": "A quick and healthy mix of fresh vegetables stir-fried with soy sauce.",
-    "image": "https://via.placeholder.com/300",
-    "ingredients": [
-      "1 bell pepper",
-      "1 broccoli head",
-      "2 carrots",
-      "2 tbsp soy sauce",
-      "1 tbsp sesame oil"
-    ],
-    "instructions": [
-      "Chop vegetables into bite-sized pieces.",
-      "Heat sesame oil in a wok.",
-      "Stir-fry vegetables for 5-7 minutes.",
-      "Add soy sauce and cook
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import recipeData from '../data.json';
+
+function RecipeDetail() {
+  const { id } = useParams();
+  const [recipe, setRecipe] = useState(null);
+
+  useEffect(() => {
+    const foundRecipe = recipeData.find((r) => r.id === parseInt(id));
+    setRecipe(foundRecipe);
+  }, [id]);
+
+  if (!recipe) {
+    return <div className="text-center py-10">Recipe not found</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          {recipe.title}
+        </h1>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <img
+            src={recipe.image}
+            alt={recipe.title}
+            className="w-full h-64 object-cover rounded-lg mb-6"
+          />
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Summary</h2>
+            <p className="text-gray-600">{recipe.summary}</p>
+          </div>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Ingredients</h2>
+            <ul className="list-disc list-inside text-gray-600">
+              {recipe.ingredients.map((ingredient, index) => (
+                <li key={index}>{ingredient}</li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Instructions</h2>
+            <ol className="list-decimal list-inside text-gray-600 space-y-2">
+              {recipe.instructions.map((instruction, index) => (
+                <li key={index}>{instruction}</li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default RecipeDetail;
