@@ -9,7 +9,8 @@ function AddRecipeForm() {
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const name = e.target.name;
+    const value = e.target.value; // Explicitly using target.value as requested
     setFormData((prev) => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
     if (errors[name]) {
@@ -40,16 +41,14 @@ function AddRecipeForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validateForm()) {
-      // For now, just log the data (could be expanded to save to data.json or an API)
       console.log('New Recipe:', {
         id: Date.now(),
         title: formData.title,
-        summary: formData.instructions.slice(0, 50) + '...', // Simple summary generation
-        image: 'https://via.placeholder.com/300', // Placeholder image
+        summary: formData.instructions.slice(0, 50) + '...',
+        image: 'https://via.placeholder.com/300',
         ingredients: formData.ingredients.split('\n').filter(item => item.trim()),
         instructions: formData.instructions.split('\n').filter(item => item.trim())
       });
-      // Reset form
       setFormData({ title: '', ingredients: '', instructions: '' });
       alert('Recipe added successfully!');
     }
