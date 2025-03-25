@@ -1,11 +1,10 @@
 import Search from './components/Search';
-import './App.css';
 
 function App() {
   return (
-    <div className="App">
-      <header>
-        <h1>GitHub User Search</h1>
+    <div>
+      <header className="bg-blue-600 text-white p-4 text-center">
+        <h1 className="text-2xl font-bold">GitHub User Search</h1>
       </header>
       <main>
         <Search />
