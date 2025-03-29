@@ -1,17 +1,4 @@
 // githubService.js
-import axios from 'axios';
-
-// Create an Axios instance with default configuration
-const githubApi = axios.create({
-  baseURL: 'https://api.github.com',
-  headers: {
-    'Accept': 'application/vnd.github.v3+json',
-    // Uncomment and add your token for higher rate limits
-    // 'Authorization': `token ${process.env.REACT_APP_GITHUB_TOKEN}`
-  },
-  timeout: 10000, // 10 second timeout
-});
-
 export const searchGitHubUsers = async (params, page = 1) => {
   const { username, location, minRepos, language } = params;
   
@@ -21,64 +8,43 @@ export const searchGitHubUsers = async (params, page = 1) => {
   if (language) query += ` language:${language}`;
 
   const perPage = 30;
+  const url = `https://api.github.com/search/users?q=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}`;
 
   try {
-    const response = await githubApi.get('/search/users', {
-      params: {
-        q: query,
-        page,
-        per_page: perPage,
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        // Optional: Add GitHub Personal Access Token for higher rate limits
+        // 'Authorization': `token ${process.env.REACT_APP_GITHUB_TOKEN}`
       },
     });
 
-    return response.data;
-  } catch (error) {
-    // Handle Axios-specific errors
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      throw new Error(`GitHub API error: ${error.response.status} - ${error.response.data.message}`);
-    } else if (error.request) {
-      // The request was made but no response was received
-      throw new Error('No response received from GitHub API');
-    } else {
-      // Something happened in setting up the request
-      throw new Error(`Request setup error: ${error.message}`);
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
     }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
 };
 
 export const getUserDetails = async (username) => {
+  const url = `https://api.github.com/users/${username}`;
+  
   try {
-    const response = await githubApi.get(`/users/${username}`);
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      throw new Error(`GitHub API error: ${error.response.status} - ${error.response.data.message}`);
-    } else if (error.request) {
-      throw new Error('No response received from GitHub API');
-    } else {
-      throw new Error(`Request setup error: ${error.message}`);
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
     }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
   }
 };
-
-// Optional: Add request interceptor for additional configuration
-githubApi.interceptors.request.use(
-  (config) => {
-    // You can modify the config here before the request is sent
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Optional: Add response interceptor
-githubApi.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
