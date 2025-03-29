@@ -1,11 +1,11 @@
-// githubService.js (Updated GitHub API Integration)
+// githubService.js
 export const searchGitHubUsers = async (params, page = 1) => {
-  const { username, location, minRepos } = params;
+  const { username, location, minRepos, language } = params;
   
-  // Construct the query string
   let query = username || '';
   if (location) query += ` location:${location}`;
   if (minRepos) query += ` repos:>=${minRepos}`;
+  if (language) query += ` language:${language}`;
 
   const perPage = 30;
   const url = `https://api.github.com/search/users?q=${encodeURIComponent(query)}&page=${page}&per_page=${perPage}`;
@@ -14,8 +14,8 @@ export const searchGitHubUsers = async (params, page = 1) => {
     const response = await fetch(url, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        // Add GitHub token if available for higher rate limits
-        // 'Authorization': `token ${process.env.GITHUB_TOKEN}`
+        // Optional: Add GitHub Personal Access Token for higher rate limits
+        // 'Authorization': `token ${process.env.REACT_APP_GITHUB_TOKEN}`
       },
     });
 
@@ -23,10 +23,28 @@ export const searchGitHubUsers = async (params, page = 1) => {
       throw new Error(`GitHub API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error('API Error:', error);
+    throw error;
+  }
+};
+
+export const getUserDetails = async (username) => {
+  const url = `https://api.github.com/users/${username}`;
+  
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
     throw error;
   }
 };
