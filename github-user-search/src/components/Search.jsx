@@ -1,5 +1,5 @@
 // Search.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { searchGitHubUsers, getUserDetails } from './githubService';
 
 const Search = () => {
@@ -22,47 +22,47 @@ const Search = () => {
     });
   };
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const fetchUserData = async (pageNum = 1, append = false) => {
     setIsLoading(true);
-    setPage(1);
     setError(null);
 
     try {
-      const response = await searchGitHubUsers(searchParams, 1);
+      // Fetch initial search results
+      const searchResponse = await searchGitHubUsers(searchParams, pageNum);
+      
+      // Fetch detailed user data for each result
       const detailedResults = await Promise.all(
-        response.items.map(async (user) => {
-          const details = await getUserDetails(user.login);
-          return { ...user, ...details };
+        searchResponse.items.map(async (user) => {
+          try {
+            const userDetails = await getUserDetails(user.login);
+            return { ...user, ...userDetails };
+          } catch (detailError) {
+            console.error(`Error fetching details for ${user.login}:`, detailError);
+            return user; // Return basic user data if detailed fetch fails
+          }
         })
       );
-      setResults(detailedResults);
-      setHasMore(response.total_count > response.items.length);
+
+      // Update state based on whether we're appending or replacing results
+      setResults(append ? [...results, ...detailedResults] : detailedResults);
+      setHasMore(searchResponse.total_count > (append ? results.length + detailedResults.length : detailedResults.length));
+      setPage(pageNum);
     } catch (error) {
-      setError('Failed to fetch results. Please try again.');
+      setError(`Failed to fetch results: ${error.message}. Please try again.`);
+      setResults([]);
+      setHasMore(false);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    await fetchUserData(1, false);
   };
 
   const loadMore = async () => {
-    setIsLoading(true);
-    const nextPage = page + 1;
-    
-    try {
-      const response = await searchGitHubUsers(searchParams, nextPage);
-      const detailedResults = await Promise.all(
-        response.items.map(async (user) => {
-          const details = await getUserDetails(user.login);
-          return { ...user, ...details };
-        })
-      );
-      setResults([...results, ...detailedResults]);
-      setPage(nextPage);
-      setHasMore(response.total_count > results.length + response.items.length);
-    } catch (error) {
-      setError('Failed to load more results.');
-    }
-    setIsLoading(false);
+    await fetchUserData(page + 1, true);
   };
 
   return (
@@ -145,47 +145,55 @@ const Search = () => {
       )}
 
       {/* Results Display */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {results.map((user) => (
-          <div
-            key={user.id}
-            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-          >
-            <div className="flex items-center space-x-4">
-              <img
-                src={user.avatar_url}
-                alt={user.login}
-                className="w-16 h-16 rounded-full border-2 border-gray-200"
-              />
-              <div>
-                <h3 className="text-xl font-semibold text-gray-800">{user.login}</h3>
-                {user.name && <p className="text-gray-600">{user.name}</p>}
-              </div>
-            </div>
-            <div className="mt-4 space-y-2">
-              {user.location && (
-                <p className="text-gray-600">
-                  <span className="font-medium">Location:</span> {user.location}
-                </p>
-              )}
-              <p className="text-gray-600">
-                <span className="font-medium">Repositories:</span> {user.public_repos}
-              </p>
-              <p className="text-gray-600">
-                <span className="font-medium">Followers:</span> {user.followers}
-              </p>
-            </div>
-            <a
-              href={user.html_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-block text-indigo-600 hover:text-indigo-800 font-medium"
+      {results.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {results.map((user) => (
+            <div
+              key={user.id}
+              className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
             >
-              View Full Profile →
-            </a>
+              <div className="flex items-center space-x-4">
+                <img
+                  src={user.avatar_url}
+                  alt={user.login}
+                  className="w-16 h-16 rounded-full border-2 border-gray-200"
+                />
+                <div>
+                  <h3 className="text-xl font-semibold text-gray-800">{user.login}</h3>
+                  {user.name && <p className="text-gray-600">{user.name}</p>}
+                </div>
+              </div>
+              <div className="mt-4 space-y-2">
+                {user.location && (
+                  <p className="text-gray-600">
+                    <span className="font-medium">Location:</span> {user.location}
+                  </p>
+                )}
+                <p className="text-gray-600">
+                  <span className="font-medium">Repositories:</span> {user.public_repos || 'N/A'}
+                </p>
+                <p className="text-gray-600">
+                  <span className="font-medium">Followers:</span> {user.followers || 'N/A'}
+                </p>
+              </div>
+              <a
+                href={user.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-block text-indigo-600 hover:text-indigo-800 font-medium"
+              >
+                View Full Profile →
+              </a>
+            </div>
+          ))}
+        </div>
+      ) : (
+        !isLoading && !error && (
+          <div className="text-center text-gray-600 mt-8">
+            No results yet. Enter search criteria above to find GitHub users.
           </div>
-        ))}
-      </div>
+        )
+      )}
 
       {/* Load More */}
       {hasMore && (
