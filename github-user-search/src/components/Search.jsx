@@ -1,17 +1,19 @@
-// Search.jsx (Updated Search Component)
-import React, { useState } from 'react';
-import { searchGitHubUsers } from './githubService';
+// Search.jsx
+import React, { useState, useEffect } from 'react';
+import { searchGitHubUsers, getUserDetails } from './githubService';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useState({
     username: '',
     location: '',
     minRepos: '',
+    language: ''
   });
   const [results, setResults] = useState([]);
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     setSearchParams({
@@ -24,13 +26,20 @@ const Search = () => {
     e.preventDefault();
     setIsLoading(true);
     setPage(1);
-    
+    setError(null);
+
     try {
       const response = await searchGitHubUsers(searchParams, 1);
-      setResults(response.items);
+      const detailedResults = await Promise.all(
+        response.items.map(async (user) => {
+          const details = await getUserDetails(user.login);
+          return { ...user, ...details };
+        })
+      );
+      setResults(detailedResults);
       setHasMore(response.total_count > response.items.length);
     } catch (error) {
-      console.error('Search error:', error);
+      setError('Failed to fetch results. Please try again.');
     }
     setIsLoading(false);
   };
@@ -41,22 +50,28 @@ const Search = () => {
     
     try {
       const response = await searchGitHubUsers(searchParams, nextPage);
-      setResults([...results, ...response.items]);
+      const detailedResults = await Promise.all(
+        response.items.map(async (user) => {
+          const details = await getUserDetails(user.login);
+          return { ...user, ...details };
+        })
+      );
+      setResults([...results, ...detailedResults]);
       setPage(nextPage);
       setHasMore(response.total_count > results.length + response.items.length);
     } catch (error) {
-      console.error('Load more error:', error);
+      setError('Failed to load more results.');
     }
     setIsLoading(false);
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-6 max-w-6xl">
       {/* Search Form */}
-      <form onSubmit={handleSearch} className="space-y-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <form onSubmit={handleSearch} className="bg-white shadow-md rounded-lg p-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
               Username
             </label>
             <input
@@ -65,12 +80,12 @@ const Search = () => {
               id="username"
               value={searchParams.username}
               onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="Enter username"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., johndoe"
             />
           </div>
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
               Location
             </label>
             <input
@@ -79,72 +94,110 @@ const Search = () => {
               id="location"
               value={searchParams.location}
               onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="Enter location"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., San Francisco"
             />
           </div>
           <div>
-            <label htmlFor="minRepos" className="block text-sm font-medium text-gray-700">
-              Minimum Repositories
+            <label htmlFor="minRepos" className="block text-sm font-medium text-gray-700 mb-1">
+              Min Repositories
             </label>
             <input
               type="number"
               name="minRepos"
               id="minRepos"
+              min="0"
               value={searchParams.minRepos}
               onChange={handleInputChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              placeholder="Enter min repos"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., 5"
+            />
+          </div>
+          <div>
+            <label htmlFor="language" className="block text-sm font-medium text-gray-700 mb-1">
+              Preferred Language
+            </label>
+            <input
+              type="text"
+              name="language"
+              id="language"
+              value={searchParams.language}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., JavaScript"
             />
           </div>
         </div>
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300"
+          className="mt-4 w-full md:w-auto px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-400 transition-colors"
         >
-          {isLoading ? 'Searching...' : 'Search'}
+          {isLoading ? 'Searching...' : 'Search Users'}
         </button>
       </form>
 
+      {/* Error Display */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
+
       {/* Results Display */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {results.map((user) => (
           <div
             key={user.id}
-            className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
           >
             <div className="flex items-center space-x-4">
               <img
                 src={user.avatar_url}
                 alt={user.login}
-                className="w-12 h-12 rounded-full"
+                className="w-16 h-16 rounded-full border-2 border-gray-200"
               />
               <div>
-                <h3 className="text-lg font-semibold">{user.login}</h3>
-                <a
-                  href={user.html_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-indigo-600 hover:underline"
-                >
-                  View Profile
-                </a>
+                <h3 className="text-xl font-semibold text-gray-800">{user.login}</h3>
+                {user.name && <p className="text-gray-600">{user.name}</p>}
               </div>
             </div>
+            <div className="mt-4 space-y-2">
+              {user.location && (
+                <p className="text-gray-600">
+                  <span className="font-medium">Location:</span> {user.location}
+                </p>
+              )}
+              <p className="text-gray-600">
+                <span className="font-medium">Repositories:</span> {user.public_repos}
+              </p>
+              <p className="text-gray-600">
+                <span className="font-medium">Followers:</span> {user.followers}
+              </p>
+            </div>
+            <a
+              href={user.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block text-indigo-600 hover:text-indigo-800 font-medium"
+            >
+              View Full Profile →
+            </a>
           </div>
         ))}
       </div>
 
-      {/* Load More Button */}
+      {/* Load More */}
       {hasMore && (
-        <button
-          onClick={loadMore}
-          disabled={isLoading}
-          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-indigo-300"
-        >
-          {isLoading ? 'Loading...' : 'Load More'}
-        </button>
+        <div className="mt-8 text-center">
+          <button
+            onClick={loadMore}
+            disabled={isLoading}
+            className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:bg-gray-400 transition-colors"
+          >
+            {isLoading ? 'Loading...' : 'Load More Results'}
+          </button>
+        </div>
       )}
     </div>
   );
